@@ -1,5 +1,5 @@
-import { connectDB } from "@/utils/db";
-import Post from "@/models/Post";
+import connectDB from '../../../utils/db';
+import Post from '../../../models/Post';
 import slugify from "slugify";
 
 export default async function handler(req, res) {
