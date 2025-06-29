@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Editor from "@/components/Editor";
+import Editor from '../../components/Editor';
 import axios from "axios";
 
 export default function CreatePost() {
