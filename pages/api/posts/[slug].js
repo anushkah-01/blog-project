@@ -1,28 +1,25 @@
-import connectDB from '../../../utils/db';
-import Post from '../../../models/Post';
+import clientPromise from '@/lib/mongodb';
 
 export default async function handler(req, res) {
+  const client = await clientPromise;
+  const db = client.db("blog");
+  const collection = db.collection("posts");
   const { slug } = req.query;
-  await connectDB();
 
-  if (req.method === "GET") {
-    const post = await Post.findOne({ slug });
-    return post ? res.status(200).json(post) : res.status(404).json({ error: "Not found" });
-  }
-
-  if (req.method === "PUT") {
+  if (req.method === 'DELETE') {
+    const result = await collection.deleteOne({ slug });
+    if (result.deletedCount === 1) {
+      res.status(200).json({ message: 'Post deleted successfully.' });
+    } else {
+      res.status(404).json({ message: 'Post not found.' });
+    }
+  } else if (req.method === 'PUT') {
     const { title, content } = req.body;
-    const newSlug = title ? slugify(title, { lower: true }) : slug;
-    const post = await Post.findOneAndUpdate(
-      { slug },
-      { title, content, slug: newSlug },
-      { new: true }
-    );
-    return res.status(200).json(post);
-  }
-
-  if (req.method === "DELETE") {
-    await Post.deleteOne({ slug });
-    return res.status(204).end();
+    const result = await collection.updateOne({ slug }, { $set: { title, content } });
+    res.status(200).json(result);
+  } else {
+    res.setHeader('Allow', ['DELETE', 'PUT']);
+    res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
+

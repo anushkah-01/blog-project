@@ -1,31 +1,25 @@
-import mongoose from 'mongoose';
+import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI;
+const options = {};
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
+let client;
+let clientPromise;
+
+if (!process.env.MONGODB_URI) {
+  throw new Error('Add MONGODB_URI to .env.local');
 }
 
-let cached = global.mongoose;
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+if (!global._mongoClientPromise) {
+  client = new MongoClient(uri, options);
+  global._mongoClientPromise = client.connect();
 }
+clientPromise = global._mongoClientPromise;
 
-async function connectDB() {
-  if (cached.conn) return cached.conn;
-
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }).then((mongoose) => mongoose);
-  }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
+export async function connectToDatabase() {
+  const client = await clientPromise;
+  const db = client.db('blogDB');
+  return { client, db };
 }
-
-export default connectDB;
-
 
 
