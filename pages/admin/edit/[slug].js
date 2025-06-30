@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import Editor from '../../../components/Editor';
 import { useRouter } from "next/router";
 import axios from "axios";
-//import Editor from '../../components/Editor';
+
 
 export default function EditPost() {
   const { query } = useRouter();
